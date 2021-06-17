@@ -1,20 +1,15 @@
 package com.example.singlecell.controller;
 
-import com.example.singlecell.model.CtmSearchRec;
-import com.example.singlecell.model.CtmSearchRst;
-import com.example.singlecell.model.RequestData;
-import com.example.singlecell.model.ResponseData;
+import com.example.singlecell.model.*;
 import com.example.singlecell.service.DegService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/deg")
+@CrossOrigin(origins = "*", maxAge=3600)
 public class DegController {
 
     @Autowired
@@ -30,5 +25,24 @@ public class DegController {
         return degService.processSearche(reqData.getData());
     }
 
+    /**
+     * 详情页
+     * @param reqData
+     * @return
+     */
+    @RequestMapping(value = "/detail", method = RequestMethod.POST)
+    public ResponseData<CtmSearchDetailRst> processDetail(@RequestBody RequestData<CtmSearchDetailRec> reqData){
+        return degService.processDetail(reqData.getData());
+    }
+
+    /**
+     * 级联搜索
+     * @param reqData
+     * @return
+     */
+    @RequestMapping(value = "/onionsearch", method = RequestMethod.POST)
+    public ResponseData<List<CtmSearchRst>> processOnionList(@RequestBody RequestData<CtmOnionSearchRec> reqData){
+        return degService.processOnionSearch(reqData.getData());
+    }
 
 }

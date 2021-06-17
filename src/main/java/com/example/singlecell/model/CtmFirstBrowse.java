@@ -1,6 +1,6 @@
 package com.example.singlecell.model;
 
-public class Description {
+public class CtmFirstBrowse {
 
     private int id;
 
@@ -9,6 +9,8 @@ public class Description {
     private String cellid;
 
     private String accession;
+
+    private String accessionHtml;
 
     private String tissue;
 
@@ -25,6 +27,8 @@ public class Description {
     private String description;
 
     private String publication;
+
+    private String publicationHtml;
 
     private String pubweb;
 
@@ -60,6 +64,14 @@ public class Description {
         this.accession = accession;
     }
 
+    public String getAccessionHtml() {
+        return accessionHtml;
+    }
+
+    public void setAccessionHtml(String accessionHtml) {
+        this.accessionHtml = accessionHtml;
+    }
+
     public String getTissue() {
         return tissue;
     }
@@ -74,6 +86,14 @@ public class Description {
 
     public void setSample(String sample) {
         this.sample = sample;
+    }
+
+    public String getGroupdata() {
+        return groupdata;
+    }
+
+    public void setGroupdata(String groupdata) {
+        this.groupdata = groupdata;
     }
 
     public String getCellsnum() {
@@ -92,6 +112,14 @@ public class Description {
         this.celltype = celltype;
     }
 
+    public String getSourcedata() {
+        return sourcedata;
+    }
+
+    public void setSourcedata(String sourcedata) {
+        this.sourcedata = sourcedata;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -108,27 +136,19 @@ public class Description {
         this.publication = publication;
     }
 
+    public String getPublicationHtml() {
+        return publicationHtml;
+    }
+
+    public void setPublicationHtml(String publicationHtml) {
+        this.publicationHtml = publicationHtml;
+    }
+
     public String getPubweb() {
         return pubweb;
     }
 
     public void setPubweb(String pubweb) {
         this.pubweb = pubweb;
-    }
-
-    public String getGroupdata() {
-        return groupdata;
-    }
-
-    public void setGroupdata(String groupdata) {
-        this.groupdata = groupdata;
-    }
-
-    public String getSourcedata() {
-        return sourcedata;
-    }
-
-    public void setSourcedata(String sourcedata) {
-        this.sourcedata = sourcedata;
     }
 }

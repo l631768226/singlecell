@@ -21,4 +21,11 @@ public interface DesMapper {
     @Select("select * from description where datasetname = #{dataset} limit 1")
     Description findByDataset(@Param("dataset")String dataset);
 
+
+    @Select("select * from description group by tissue order by cellid")
+    List<Description> findGroupByTissue();
+
+    @Select("select * from description where tissue = #{tissue} group by datasetname order by cellid")
+    List<Description> findByTissueGroupByDataset(@Param("tissue")String tissue);
+
 }

@@ -2,153 +2,53 @@ package com.example.singlecell.model;
 
 public class CtmBrowseDetailRst {
 
-    private int id;
+    private CtmFirstBrowse first;
 
-    private String datasetname;
+    private CtmSecondBrowse second;
 
-    private String cellid;
+    private CtmThirdBrowse third;
 
-    private String accession;
+    private CtmFourthBrowse fourth;
 
-    private String accessionHtml;
+    private CtmFifthBrowse fifth;
 
-    private String tissue;
-
-    private String sample;
-
-    private String group;
-
-    private String cellsnum;
-
-    private String celltype;
-
-    private String source;
-
-    private String description;
-
-    private String publication;
-
-    private String publicationHtml;
-
-    private String pubweb;
-
-    public int getId() {
-        return id;
+    public CtmFirstBrowse getFirst() {
+        return first;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setFirst(CtmFirstBrowse first) {
+        this.first = first;
     }
 
-    public String getDatasetname() {
-        return datasetname;
+    public CtmSecondBrowse getSecond() {
+        return second;
     }
 
-    public void setDatasetname(String datasetname) {
-        this.datasetname = datasetname;
+    public void setSecond(CtmSecondBrowse second) {
+        this.second = second;
     }
 
-    public String getCellid() {
-        return cellid;
+    public CtmThirdBrowse getThird() {
+        return third;
     }
 
-    public void setCellid(String cellid) {
-        this.cellid = cellid;
+    public void setThird(CtmThirdBrowse third) {
+        this.third = third;
     }
 
-    public String getAccession() {
-        return accession;
+    public CtmFourthBrowse getFourth() {
+        return fourth;
     }
 
-    public void setAccession(String accession) {
-        this.accession = accession;
+    public void setFourth(CtmFourthBrowse fourth) {
+        this.fourth = fourth;
     }
 
-    public String getAccessionHtml() {
-        return accessionHtml;
+    public CtmFifthBrowse getFifth() {
+        return fifth;
     }
 
-    public void setAccessionHtml(String accessionHtml) {
-        this.accessionHtml = accessionHtml;
-    }
-
-    public String getTissue() {
-        return tissue;
-    }
-
-    public void setTissue(String tissue) {
-        this.tissue = tissue;
-    }
-
-    public String getSample() {
-        return sample;
-    }
-
-    public void setSample(String sample) {
-        this.sample = sample;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public String getCellsnum() {
-        return cellsnum;
-    }
-
-    public void setCellsnum(String cellsnum) {
-        this.cellsnum = cellsnum;
-    }
-
-    public String getCelltype() {
-        return celltype;
-    }
-
-    public void setCelltype(String celltype) {
-        this.celltype = celltype;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getPublication() {
-        return publication;
-    }
-
-    public void setPublication(String publication) {
-        this.publication = publication;
-    }
-
-    public String getPublicationHtml() {
-        return publicationHtml;
-    }
-
-    public void setPublicationHtml(String publicationHtml) {
-        this.publicationHtml = publicationHtml;
-    }
-
-    public String getPubweb() {
-        return pubweb;
-    }
-
-    public void setPubweb(String pubweb) {
-        this.pubweb = pubweb;
+    public void setFifth(CtmFifthBrowse fifth) {
+        this.fifth = fifth;
     }
 }
