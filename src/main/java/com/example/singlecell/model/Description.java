@@ -6,7 +6,7 @@ public class Description {
 
     private String datasetname;
 
-    private String cellid;
+    private String databaseid;
 
     private String accession;
 
@@ -28,6 +28,14 @@ public class Description {
 
     private String pubweb;
 
+    public String getDatabaseid() {
+        return databaseid;
+    }
+
+    public void setDatabaseid(String databaseid) {
+        this.databaseid = databaseid;
+    }
+
     public int getId() {
         return id;
     }
@@ -42,14 +50,6 @@ public class Description {
 
     public void setDatasetname(String datasetname) {
         this.datasetname = datasetname;
-    }
-
-    public String getCellid() {
-        return cellid;
-    }
-
-    public void setCellid(String cellid) {
-        this.cellid = cellid;
     }
 
     public String getAccession() {

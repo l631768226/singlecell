@@ -1,6 +1,6 @@
 package com.example.singlecell.model;
 
-public class CtmFirstBrowse {
+public class CtmDownloadList {
 
     private int id;
 
@@ -24,13 +24,15 @@ public class CtmFirstBrowse {
 
     private String sourcedata;
 
-    private String description;
+    private String profile;
 
-    private String publication;
+    public String getProfile() {
+        return profile;
+    }
 
-    private String publicationHtml;
-
-    private String pubweb;
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
 
     public int getId() {
         return id;
@@ -120,35 +122,4 @@ public class CtmFirstBrowse {
         this.sourcedata = sourcedata;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getPublication() {
-        return publication;
-    }
-
-    public void setPublication(String publication) {
-        this.publication = publication;
-    }
-
-    public String getPublicationHtml() {
-        return publicationHtml;
-    }
-
-    public void setPublicationHtml(String publicationHtml) {
-        this.publicationHtml = publicationHtml;
-    }
-
-    public String getPubweb() {
-        return pubweb;
-    }
-
-    public void setPubweb(String pubweb) {
-        this.pubweb = pubweb;
-    }
 }

@@ -23,52 +23,30 @@ public class DegService {
     @Value("${custom.basepath}")
     private String basepath;
 
-    public ResponseData<List<CtmSearchRst>> processSearche(CtmSearchRec data){
-        ResponseData<List<CtmSearchRst>> responseData = new ResponseData<>();
+    public ResponseData<List<CtmWindowDeg>> processSearche(CtmSearchRec data){
+        ResponseData<List<CtmWindowDeg>> responseData = new ResponseData<>();
+
+        List<CtmWindowDeg> ctmWindowDegList = new ArrayList<>();
+
         String gene = data.getGene();
-        List<CtmSearchRst> ctmSearchRsts = new ArrayList<>();
-        List<Deg> degList = new ArrayList<>();
-        if(gene != null && !"".equals(gene)){
-            if(data.getPageSize() == null || data.getPage() == null){
-                degList = degMapper.findListByGene(gene);
-            }else{
-                PageHelper.startPage(data.getPage(), data.getPageSize());
-                degList = degMapper.findListByGene(gene);
-            }
-        }else{
-            //基因信息为空，级联搜索
-            String tissue = data.getTissue();
-            String dataset = data.getDataset();
-            String celltype = data.getCelltype();
 
-            if(data.getPageSize() == null || data.getPage() == null){
-                degList = degMapper.findSearch(tissue, dataset, celltype);
-            }else{
-                PageHelper.startPage(data.getPage(), data.getPageSize());
-                degList = degMapper.findSearch(tissue, dataset, celltype);
+        List<Deg> degList = degMapper.findListByGene(gene);
+        if(!degList.isEmpty()){
+            for(Deg deg : degList){
+                CtmWindowDeg ctmWindowDeg = new CtmWindowDeg();
+                BeanUtils.copyProperties(deg, ctmWindowDeg);
+                String geneHtml = "<p style:\"font-size:18px;font-weight:500;\">" +"<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/gene/?term="
+                        + gene + "\">"+ gene + "</a></span>" + "</p>";
+                ctmWindowDeg.setGeneHtml(geneHtml);
+
+                ctmWindowDegList.add(ctmWindowDeg);
             }
         }
 
-        if(degList.isEmpty()){
-            responseData.setStatus(ReturnStatus.OK);
-            responseData.setResultSet(ctmSearchRsts);
-            return responseData;
-        }else{
-            for(Deg deg :  degList){
-                CtmSearchRst ctmSearchRst = new CtmSearchRst();
-                BeanUtils.copyProperties(deg, ctmSearchRst);
-                ctmSearchRsts.add(ctmSearchRst);
-            }
+        responseData.setStatus(ReturnStatus.OK);
+        responseData.setResultSet(ctmWindowDegList);
+        return responseData;
 
-            if(data.getPage()!= null && data.getPageSize() != null){
-                PageInfo<CtmSearchRst> pageInfo = new PageInfo<>(ctmSearchRsts);
-                responseData.setPaging(pageInfo);
-            }
-
-            responseData.setStatus(ReturnStatus.OK);
-            responseData.setResultSet(ctmSearchRsts);
-            return responseData;
-        }
     }
 
     public ResponseData<CtmSearchDetailRst> processDetail(CtmSearchDetailRec data) {
@@ -132,10 +110,98 @@ public class DegService {
         return responseData;
     }
 
-    public ResponseData<List<CtmSearchRst>> processOnionSearch(CtmOnionSearchRec data) {
+    public ResponseData<CtmOnionSearchRst> processOnionSearch(CtmOnionSearchRec data) {
 
-        ResponseData<List<CtmSearchRst>> responseData = new ResponseData<>();
+        ResponseData<CtmOnionSearchRst> responseData = new ResponseData<>();
+        CtmOnionSearchRst ctmOnionSearchRst = new CtmOnionSearchRst();
 
+
+        List<CtmSearchSecondRst> resultList = new ArrayList<>();
+
+        String celltype = data.getCelltype();
+        String tissue = data.getTissue();
+        String dataset = data.getDataset();
+
+        List<Deg> degList = degMapper.findByTDC(tissue, dataset, celltype);
+        if(!degList.isEmpty()){
+            for(Deg deg : degList){
+                String resultCellType = deg.getCelltype();
+                String volcanoPath = basepath + "/" + dataset + "/火山图/" + resultCellType + "_Volcano.png";
+                String imgStr = CommonMethod.getImageStr(volcanoPath);
+                if(imgStr == null){
+                    continue;
+                }
+                CtmSearchSecondRst ctmSearchSecondRst = new CtmSearchSecondRst();
+                ctmSearchSecondRst.setImgStr(imgStr);
+                ctmSearchSecondRst.setName(resultCellType);
+                ctmSearchSecondRst.setCelltype(resultCellType);
+                ctmSearchSecondRst.setDataset(deg.getDataset());
+                resultList.add(ctmSearchSecondRst);
+            }
+        }
+        ctmOnionSearchRst.setSearchList(resultList);
+
+        List<CtmWindowDeg> windowDegs = new ArrayList<>();
+
+        List<Deg> degsList = degMapper.findByDatasetAndCellType(dataset, celltype);
+
+        if(degsList.isEmpty()){
+
+        }else{
+            for(Deg deg : degsList){
+                CtmWindowDeg ctmWindowDeg = new CtmWindowDeg();
+                BeanUtils.copyProperties(deg, ctmWindowDeg);
+                String gene = deg.getGene();
+                String geneHtml = "<p style:\"font-size:18px;font-weight:500;\">" +"<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/gene/?term="
+                        + gene + "\">"+ gene + "</a></span>" + "</p>";
+                ctmWindowDeg.setGeneHtml(geneHtml);
+
+                windowDegs.add(ctmWindowDeg);
+            }
+        }
+
+        String upPath =  basepath + "/" + dataset + "/GO/" + celltype + "_Go_up.png";
+        String upImgStr = CommonMethod.getImageStr(upPath);
+
+        String downPath =  basepath + "/" + dataset + "/GO/" + celltype + "_Go_down.png";
+        String downImgStr = CommonMethod.getImageStr(downPath);
+
+        ctmOnionSearchRst.setDataList(windowDegs);
+        ctmOnionSearchRst.setDownImgStr(downImgStr);
+        ctmOnionSearchRst.setUpImgStr(upImgStr);
+        responseData.setStatus(ReturnStatus.OK);
+        responseData.setResultSet(ctmOnionSearchRst);
+        return responseData;
+    }
+
+    public ResponseData<List<CtmLikeRst>> processGeneLike(CtmLike data) {
+
+        ResponseData<List<CtmLikeRst>> responseData = new ResponseData<>();
+
+        String gene = data.getGene();
+
+        if(gene == null || "".equals(gene)){
+            responseData.setStatus(ReturnStatus.ERR0001);
+            responseData.setExtInfo("传入参数有误");
+            return responseData;
+        }else{
+            gene = gene + "%";
+        }
+
+        List<String> geneList = degMapper.findGeneLike(gene);
+        List<CtmLikeRst> resultList = new ArrayList<>();
+
+        if(!geneList.isEmpty()){
+            for(String str : geneList){
+                CtmLikeRst ctmLikeRst = new CtmLikeRst();
+                ctmLikeRst.setValue(str);
+                resultList.add(ctmLikeRst);
+            }
+        }
+
+
+        responseData.setStatus(ReturnStatus.OK);
+        responseData.setResultSet(resultList);
         return responseData;
     }
 }

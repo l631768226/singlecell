@@ -4,7 +4,6 @@ import com.example.singlecell.mapper.DegMapper;
 import com.example.singlecell.mapper.DesMapper;
 import com.example.singlecell.model.*;
 import com.example.singlecell.utils.CommonMethod;
-import com.google.gson.Gson;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -13,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import sun.awt.image.ImageWatched;
+import sun.security.krb5.internal.crypto.Des;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +38,9 @@ public class DesService {
     @Value("${custom.basepath}")
     private String basepath;
 
+    @Value("${custom.downloadprofileurl}")
+    private String downloadProfileUrl;
+
     public ResponseData<List<CtmBrowseRst>> processBrowse(CtmBrowseRec data){
         ResponseData<List<CtmBrowseRst>> responseData = new ResponseData<>();
         List<CtmBrowseRst> dataList = new ArrayList<>();
@@ -46,7 +51,7 @@ public class DesService {
         }else{
             for(Description first : firstDes){
                 CtmBrowseRst ctmBrowseRst = new CtmBrowseRst();
-                ctmBrowseRst.setId(first.getId());
+                ctmBrowseRst.setId(first.getDatabaseid());
                 String tissue = first.getTissue();
                 ctmBrowseRst.setLabel(tissue);
                 List<Description> secondList = desMapper.findByTissueGroupByDataset(tissue);
@@ -82,6 +87,9 @@ public class DesService {
             responseData.setExtInfo("传入数据有误");
             return responseData;
         }else{
+
+            String tissue = description.getTissue();
+
             //第一部分
             CtmFirstBrowse firstBrowse = new CtmFirstBrowse();
             BeanUtils.copyProperties(description, firstBrowse);
@@ -89,12 +97,18 @@ public class DesService {
 //            "<p>" + metabolite + " (" +"<a target=\"_blank\" href=\"https://pubchem.ncbi.nlm.nih.gov/compound/"
 //                    + metabolitePubChemCID + "\">"+ metabolitePubChemCID + "</a></span>" + ")" + "</p>";
             String accessionHtml = "<p>" + "<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
-                    + accession + "\">"+ accession + "</a></span>" + "</p>";
+                    + accession + "\"  style:\"font-size:18px;font-weight:500;\">"+ accession + "</a></span>" + "</p>";
             firstBrowse.setAccessionHtml(accessionHtml);
 
             String publication = firstBrowse.getPublication();
-            String publicationHtml = "<p>"  +"<a target=\"_blank\" href=\"https://pubmed.ncbi.nlm.nih.gov/"
-                    + publication + "\">"+ publication + "</a></span>" + "</p>";
+            String publicationHtml = "";
+            if(publication == null || "".equals(publication)){
+                publicationHtml = "";
+            }else{
+                publicationHtml = "<p>"  +"<a  style:\"font-size:18px;font-weight:500;\" target=\"_blank\" href=\"" + description.getPubweb()    //https://pubmed.ncbi.nlm.nih.gov/"
+                        + publication + "\">"+ publication + "</a></span>" + "</p>";
+            }
+
             firstBrowse.setPublicationHtml(publicationHtml);
 
             //第二部分
@@ -195,9 +209,15 @@ public class DesService {
             if(cellTypeList.isEmpty()){
 
             }else{
+
+                fourth.setDataset(dataset);
+                fourth.setTissue(tissue);
+                List<ListData> dropList = new ArrayList<>();
+
                 List<FourthData> fourthDataList = new ArrayList<>();
                 for(String cellTypeName : cellTypeList){
                     FourthData fourthData = new FourthData();
+                    ListData listData = new ListData();
                     fourthData.setName(cellTypeName);
                     String volcanoPath = basepath + "/" + dataset + "/火山图/" + cellTypeName + "_Volcano.png";
                     String imgStr = CommonMethod.getImageStr(volcanoPath);
@@ -205,11 +225,16 @@ public class DesService {
                         continue;
                     }
                     fourthData.setImgStr(imgStr);
+
+                    listData.setKey(cellTypeName);
+                    listData.setValue(cellTypeName);
+
                     fourthDataList.add(fourthData);
+                    dropList.add(listData);
                 }
                 fourth.setDataList(fourthDataList);
+                fourth.setDropList(dropList);
             }
-
 
             //第五部分
             CtmFifthBrowse ctmFifthBrowse = new CtmFifthBrowse();
@@ -341,7 +366,7 @@ public class DesService {
                 CtmWindowDeg ctmWindowDeg = new CtmWindowDeg();
                 BeanUtils.copyProperties(deg, ctmWindowDeg);
                 String gene = deg.getGene();
-                String geneHtml = "<p>" +"<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/gene/?term="
+                String geneHtml = "<p style:\"font-size:18px;font-weight:500;\">" +"<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/gene/?term="
                         + gene + "\">"+ gene + "</a></span>" + "</p>";
                 ctmWindowDeg.setGeneHtml(geneHtml);
 
@@ -386,6 +411,13 @@ public class DesService {
             ctmViolinRst.setName(gene);
         }
 
+        String umapPath = basepath + "/" + dataset + "/UMAP/" + celltype + "_" + gene + "_UMAP.png";
+        File umap = new File(umapPath);
+        if(umap.exists()){
+            String umapStr = CommonMethod.getImageStr(umapPath);
+            ctmViolinRst.setUmapStr(umapStr);
+        }
+
         responseData.setStatus(ReturnStatus.OK);
         responseData.setResultSet(ctmViolinRst);
         return responseData;
@@ -398,12 +430,12 @@ public class DesService {
         XSSFWorkbook wb = new XSSFWorkbook();
         Sheet sheet = wb.createSheet("Goods");// 创建一张表
         Row titleRow = sheet.createRow(0);// 创建第一行，起始为0
-        titleRow.createCell(0).setCellValue("dataset");// 第一列
-        titleRow.createCell(1).setCellValue("tissue");
-        titleRow.createCell(2).setCellValue("celltype");
-        titleRow.createCell(3).setCellValue("gene");
-        titleRow.createCell(4).setCellValue("log2fc");
-        titleRow.createCell(5).setCellValue("pvalue");
+        titleRow.createCell(0).setCellValue("Dataset");// 第一列
+        titleRow.createCell(1).setCellValue("Tissue");
+        titleRow.createCell(2).setCellValue("Cell type");
+        titleRow.createCell(3).setCellValue("Gene");
+        titleRow.createCell(4).setCellValue("Log2FC");
+        titleRow.createCell(5).setCellValue("P value");
         int cell = 1;
 
         if(!degList.isEmpty()){
@@ -427,5 +459,97 @@ public class DesService {
         }
 
         return wb;
+    }
+
+    public ResponseData<List<CtmDownloadList>> processDownloadList() {
+
+        ResponseData<List<CtmDownloadList>> responseData = new ResponseData<>();
+        List<CtmDownloadList> ctmDownloadLists = new ArrayList<>();
+
+        List<Description> desList = desMapper.findList();
+        if(desList.isEmpty()){
+
+        }else{
+            for(Description description : desList){
+                CtmDownloadList ctmDownloadList = new CtmDownloadList();
+                BeanUtils.copyProperties(description, ctmDownloadList);
+
+                String dataset = description.getDatasetname();
+
+                String accession = description.getAccession();
+                String accessionHtml = "<p>" + "<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
+                        + accession + "\">"+ accession + "</a></span>" + "</p>";
+                ctmDownloadList.setAccessionHtml(accessionHtml);
+
+                String profileHtml = "<p>" + "<a target=\"_blank\" href=\"" + downloadProfileUrl +
+                         dataset + "\">download</a></span>" + "</p>";
+
+                ctmDownloadList.setProfile(profileHtml);
+
+                ctmDownloadLists.add(ctmDownloadList);
+            }
+        }
+
+        responseData.setStatus(ReturnStatus.OK);
+        responseData.setResultSet(ctmDownloadLists);
+        return responseData;
+    }
+
+    public ResponseData<List<CtmFirstPageTree>> processFirstTree() {
+
+        ResponseData<List<CtmFirstPageTree>> responseData = new ResponseData<>();
+
+        List<CtmFirstPageTree> treeList = new ArrayList<>();
+
+        List<Description> descriptions = desMapper.findListOrderByDID();
+        if(!descriptions.isEmpty()){
+            for(Description description : descriptions){
+                CtmFirstPageTree ctmFirstPageTree = new CtmFirstPageTree();
+                ctmFirstPageTree.setId(description.getDatabaseid());
+                ctmFirstPageTree.setLabel(description.getTissue());
+                treeList.add(ctmFirstPageTree);
+            }
+        }
+
+        responseData.setStatus(ReturnStatus.OK);
+        responseData.setResultSet(treeList);
+        return responseData;
+    }
+
+    public void downloadfile(String id, HttpServletResponse response) {
+
+        String filePath = basepath + "/" + id + "/" + id + ".csv";
+        String fileName = id + ".csv";
+
+        File file = new File(filePath);
+        if(file.exists()){
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName+";"+"filename*=utf-8''"+fileName);
+            response.setContentType("multipart/form-data");
+            ServletOutputStream out = null;
+            FileInputStream in = null;
+            try {
+                in = new FileInputStream(new File(filePath));
+                out = response.getOutputStream();
+                // 读取文件流
+                int len = 0;
+                byte[] buffer = new byte[1024 * 10];
+                while ((len = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, len);
+                }
+                out.flush();
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                try {
+                    out.close();
+                    in.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }else{
+
+        }
+
     }
 }

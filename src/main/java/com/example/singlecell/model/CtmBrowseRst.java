@@ -4,17 +4,27 @@ import java.util.List;
 
 public class CtmBrowseRst {
 
-    private int id;
+    private String id;
 
     private String label;
 
     private List<CtmChild> children;
 
-    public int getId() {
+    private boolean show = false;
+
+    public boolean isShow() {
+        return show;
+    }
+
+    public void setShow(boolean show) {
+        this.show = show;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

@@ -6,6 +6,16 @@ public class CtmViolinRst {
 
     private String name;
 
+    private String umapStr;
+
+    public String getUmapStr() {
+        return umapStr;
+    }
+
+    public void setUmapStr(String umapStr) {
+        this.umapStr = umapStr;
+    }
+
     public String getName() {
         return name;
     }

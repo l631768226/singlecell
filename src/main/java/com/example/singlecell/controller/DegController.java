@@ -21,7 +21,7 @@ public class DegController {
      * @return
      */
     @RequestMapping(value = "/search", method = RequestMethod.POST)
-    public ResponseData<List<CtmSearchRst>> processList(@RequestBody RequestData<CtmSearchRec> reqData){
+    public ResponseData<List<CtmWindowDeg>> processList(@RequestBody RequestData<CtmSearchRec> reqData){
         return degService.processSearche(reqData.getData());
     }
 
@@ -41,8 +41,19 @@ public class DegController {
      * @return
      */
     @RequestMapping(value = "/onionsearch", method = RequestMethod.POST)
-    public ResponseData<List<CtmSearchRst>> processOnionList(@RequestBody RequestData<CtmOnionSearchRec> reqData){
+    public ResponseData<CtmOnionSearchRst> processOnionList(@RequestBody RequestData<CtmOnionSearchRec> reqData){
         return degService.processOnionSearch(reqData.getData());
     }
+
+    /**
+     * 联想
+     * @param reqData
+     * @return
+     */
+    @RequestMapping(value = "/like", method = RequestMethod.POST)
+    public ResponseData<List<CtmLikeRst>> processGeneLike(@RequestBody RequestData<CtmLike> reqData){
+        return degService.processGeneLike(reqData.getData());
+    }
+
 
 }

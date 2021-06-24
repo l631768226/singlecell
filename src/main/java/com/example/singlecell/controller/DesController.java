@@ -34,6 +34,11 @@ public class DesController {
         return desService.processBrowse(reqData.getData());
     }
 
+    @RequestMapping(value = "/firstTree", method = RequestMethod.POST)
+    public ResponseData<List<CtmFirstPageTree>> processFirstTree(@RequestBody RequestData<?> requestData){
+        return desService.processFirstTree();
+    }
+
     //browse详情页
     @RequestMapping(value = "/detail", method = RequestMethod.POST)
     public ResponseData<CtmBrowseDetailRst> processDetail(@RequestBody RequestData<CtmBrowseDetailRec> reqData){
@@ -70,6 +75,14 @@ public class DesController {
         return desService.processViolin(reqData.getData());
     }
 
+
+    @RequestMapping(value = "/file/download", method = {RequestMethod.POST, RequestMethod.GET})
+    void downloadfile(@RequestParam(name = "id", required = true) String id,
+                      HttpServletResponse response){
+        desService.downloadfile(id, response);
+    }
+
+
     @RequestMapping("/Excel")
     public Object excelFind(HttpServletRequest request,
                             @RequestParam(name = "dataset", required = true) String dataset,
@@ -101,6 +114,12 @@ public class DesController {
             e.printStackTrace();
         }
         return "success";
+    }
+
+
+    @RequestMapping(value = "/downloadList", method = RequestMethod.POST)
+    public ResponseData<List<CtmDownloadList>> processDownloadList(@RequestBody RequestData<?> requestData){
+        return desService.processDownloadList();
     }
 
 }
