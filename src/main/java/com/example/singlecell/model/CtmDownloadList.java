@@ -26,6 +26,16 @@ public class CtmDownloadList {
 
     private String profile;
 
+    private String alldegs;
+
+    public String getAlldegs(){
+        return alldegs;
+    }
+
+    public void setAlldegs(String alldegs){
+        this.alldegs = alldegs;
+    }
+
     public String getProfile() {
         return profile;
     }

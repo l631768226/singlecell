@@ -11,8 +11,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import sun.awt.image.ImageWatched;
-import sun.security.krb5.internal.crypto.Des;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -40,6 +38,44 @@ public class DesService {
 
     @Value("${custom.downloadprofileurl}")
     private String downloadProfileUrl;
+
+    @Value("${custom.downloaddegsurl}")
+    private String downloadDegsUrl;
+
+    private String[] firstColor = {"#da0d68",
+            "#da1d23",
+            "#dd4c51",
+            "#6b238e",
+            "#DB7093",
+            "#FF69B4",
+            "#FF1493",
+            "#C71585",
+            "#DA70D6",
+            "#993333",
+            "#FF00FF"};
+    private String[] secondColor = {"#975e6d",
+            "#e0719c",
+            "#dd4c51",
+            "#c94a44",
+            "#dd4c51",
+            "#BA55D3",
+            "#9400D3",
+            "#9932CC",
+            "#4B0082",
+            "#8A2BE2",
+            "#9370DB",
+            "#7B68EE",
+            "#70DBDB",
+            "#7F00FF",
+            "#70DB93",
+            "#9F5F9F",
+            "#003300",
+            "#FF00FF",
+            "#f7a128",
+            "#483D8B",
+            "#E6E6FA",
+            "#F8F8FF",
+            "#527F76"};
 
     public ResponseData<List<CtmBrowseRst>> processBrowse(CtmBrowseRec data){
         ResponseData<List<CtmBrowseRst>> responseData = new ResponseData<>();
@@ -113,7 +149,7 @@ public class DesService {
 
             //第二部分
             CtmSecondBrowse ctmSecondBrowse = new CtmSecondBrowse();
-            String umapPath = basepath + "/" + dataset + "/UMAP.png";
+            String umapPath = basepath + "/" + dataset + "/UAMP.png";
             File umap = new File(umapPath);
             if(umap.exists()){
                 String umapStr = CommonMethod.getImageStr(umapPath);
@@ -482,10 +518,13 @@ public class DesService {
                 ctmDownloadList.setAccessionHtml(accessionHtml);
 
                 String profileHtml = "<p>" + "<a target=\"_blank\" href=\"" + downloadProfileUrl +
-                         dataset + "\">download</a></span>" + "</p>";
+                         dataset + "\">DEGs' expression profile</a></span>" + "</p>";
+
+                String alldegsHtml = "<p>" + "<a target=\"_blank\" href=\"" + downloadDegsUrl +
+                        dataset + "\">difference of all genes</a></span>" + "</p>";
 
                 ctmDownloadList.setProfile(profileHtml);
-
+                ctmDownloadList.setAlldegs(alldegsHtml);
                 ctmDownloadLists.add(ctmDownloadList);
             }
         }
@@ -550,6 +589,128 @@ public class DesService {
         }else{
 
         }
+
+    }
+
+    public ResponseData<List<TissueSunChart>> processSunChart(CtmBrowseRec data) {
+
+        ResponseData<List<TissueSunChart>> responseData = new ResponseData<>();
+
+        List<TissueSunChart> tissueSunChartList = new ArrayList<>();
+
+        List<Description> firstDes = desMapper.findGroupByTissue();
+        if(firstDes.isEmpty()){
+
+        }else{
+            int firstCount = 0;
+            int secondCount = 0;
+            for(Description first : firstDes){
+                TissueSunChart tissueSunChart = new TissueSunChart();
+
+                ItemStyle firstItem = new ItemStyle();
+                firstItem.setColor(firstColor[firstCount]);
+                firstCount ++;
+                String tissue = first.getTissue();
+                tissueSunChart.setName(tissue);
+                tissueSunChart.setItemStyle(firstItem);
+
+                List<Description> secondList = desMapper.findByTissueGroupByDataset(tissue);
+                List<ChildSunChart> childList = new ArrayList<>();
+
+                for(Description second : secondList){
+                    ChildSunChart ctmChild = new ChildSunChart();
+                    ctmChild.setName(second.getDatasetname());
+                    ctmChild.setValue(Integer.valueOf(second.getCellsnum()));
+                    ItemStyle secondStyle = new ItemStyle();
+                    secondStyle.setColor(secondColor[secondCount]);
+                    ctmChild.setItemStyle(secondStyle);
+                    childList.add(ctmChild);
+                    secondCount ++;
+                }
+                tissueSunChart.setChildren(childList);
+
+                tissueSunChartList.add(tissueSunChart);
+            }
+        }
+
+        responseData.setResultSet(tissueSunChartList);
+        responseData.setStatus(ReturnStatus.OK);
+        return responseData;
+    }
+
+    public void downloaddegs(String id, HttpServletResponse response) {
+
+        String filePath = basepath + "/All_DEGs/" + id + "_all_DEGs.csv";
+        String fileName = id + "_all_DEGs.csv";
+
+        File file = new File(filePath);
+        if(file.exists()){
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName+";"+"filename*=utf-8''"+fileName);
+            response.setContentType("multipart/form-data");
+            ServletOutputStream out = null;
+            FileInputStream in = null;
+            try {
+                in = new FileInputStream(new File(filePath));
+                out = response.getOutputStream();
+                // 读取文件流
+                int len = 0;
+                byte[] buffer = new byte[1024 * 10];
+                while ((len = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, len);
+                }
+                out.flush();
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                try {
+                    out.close();
+                    in.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }else{
+
+        }
+
+    }
+
+    public XSSFWorkbook searchFirstDownloadExcel(String gene) {
+
+        List<Deg> degList = degMapper.findListByGene(gene);
+
+        XSSFWorkbook wb = new XSSFWorkbook();
+        Sheet sheet = wb.createSheet("Goods");// 创建一张表
+        Row titleRow = sheet.createRow(0);// 创建第一行，起始为0
+        titleRow.createCell(0).setCellValue("Dataset");// 第一列
+        titleRow.createCell(1).setCellValue("Tissue");
+        titleRow.createCell(2).setCellValue("Cell type");
+        titleRow.createCell(3).setCellValue("Gene");
+        titleRow.createCell(4).setCellValue("Log2FC");
+        titleRow.createCell(5).setCellValue("P value");
+        int cell = 1;
+
+        if(!degList.isEmpty()){
+
+            for(Deg deg : degList) {
+                Row row = sheet.createRow(cell);// 从第二行开始保存数据
+                //humanMouse
+                row.createCell(0).setCellValue(deg.getDataset());
+                //Gut Microbiota(ID)
+                row.createCell(1).setCellValue(deg.getTissue());
+                //Strain
+                row.createCell(2).setCellValue(deg.getCelltype());
+                //Metabolite(ID)
+                row.createCell(3).setCellValue(deg.getGene());
+                //Gene(ID)
+                row.createCell(4).setCellValue(deg.getLogfc());
+                //Alteration
+                row.createCell(5).setCellValue(deg.getPvalue());
+                cell++;
+            }
+        }
+
+        return wb;
 
     }
 }

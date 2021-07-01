@@ -34,6 +34,17 @@ public class DesController {
         return desService.processBrowse(reqData.getData());
     }
 
+    /**
+     * 旭日图
+     * @param reqData
+     * @return
+     */
+    @RequestMapping(value = "/sun", method = RequestMethod.POST)
+    public ResponseData<List<TissueSunChart>> processSunChart(@RequestBody RequestData<CtmBrowseRec> reqData){
+        return desService.processSunChart(reqData.getData());
+    }
+
+
     @RequestMapping(value = "/firstTree", method = RequestMethod.POST)
     public ResponseData<List<CtmFirstPageTree>> processFirstTree(@RequestBody RequestData<?> requestData){
         return desService.processFirstTree();
@@ -82,6 +93,12 @@ public class DesController {
         desService.downloadfile(id, response);
     }
 
+    @RequestMapping(value = "/alldegs", method = {RequestMethod.POST, RequestMethod.GET})
+    void downloaddegs(@RequestParam(name = "id", required = true) String id,
+                      HttpServletResponse response){
+        desService.downloaddegs(id, response);
+    }
+
 
     @RequestMapping("/Excel")
     public Object excelFind(HttpServletRequest request,
@@ -96,6 +113,37 @@ public class DesController {
         System.out.println("dataset:" + dataset + "*****celltype:" + celltype);
 
         wb = desService.searchDownloadExcel(dataset, celltype);
+
+        String fileName = "data.xlsx";
+        OutputStream outputStream =null;
+        try {
+            fileName = URLEncoder.encode(fileName,"UTF-8");
+            //设置ContentType请求信息格式
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("Content-disposition", "attachment;filename=" + fileName);
+            outputStream = response.getOutputStream();
+            wb.write(outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "success";
+    }
+
+
+    @RequestMapping("/searchExcel")
+    public Object excelSearchFind(HttpServletRequest request,
+                            @RequestParam(name = "gene", required = true) String gene,
+                            HttpServletResponse response) {
+        XSSFWorkbook wb = new XSSFWorkbook();
+
+//        String dataset = request.getParameter("dataset");
+//        String celltype = request.getParameter("celltype");
+
+        wb = desService.searchFirstDownloadExcel(gene);
 
         String fileName = "data.xlsx";
         OutputStream outputStream =null;

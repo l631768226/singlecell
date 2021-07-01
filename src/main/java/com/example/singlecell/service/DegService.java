@@ -95,7 +95,7 @@ public class DegService {
             ctmSearchDetailRst.setHeatmapStr(heatmapStr);
         }
         //umap
-        String umapPath = basepath + "/" + dataset + "/UMAP.png";
+        String umapPath = basepath + "/" + dataset + "/UAMP.png";
         File umap = new File(umapPath);
         if(umap.exists()){
             String umapStr = CommonMethod.getImageStr(umapPath);
