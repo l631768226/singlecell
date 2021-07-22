@@ -2,6 +2,7 @@ package com.example.singlecell.service;
 
 import com.example.singlecell.mapper.DegMapper;
 import com.example.singlecell.mapper.DesMapper;
+import com.example.singlecell.mapper.UmapDataMapper;
 import com.example.singlecell.model.*;
 import com.example.singlecell.utils.CommonMethod;
 import org.apache.poi.ss.usermodel.Row;
@@ -20,9 +21,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class DesService {
@@ -32,6 +31,9 @@ public class DesService {
 
     @Autowired
     private DegMapper degMapper;
+
+    @Autowired
+    private UmapDataMapper umapDataMapper;
 
     @Value("${custom.basepath}")
     private String basepath;
@@ -76,6 +78,13 @@ public class DesService {
             "#E6E6FA",
             "#F8F8FF",
             "#527F76"};
+
+    private String[] umapColor = {"#37A2DA", "#e06343", "#37a354", "#b55dba", "#b5bd48", "#8378EA",
+            "#96BFFF", "#da0d68", "#da1d23", "#dd4c51", "#6b238e", "#DB7093", "#FF69B4", "#FF1493",
+            "#C71585", "#DA70D6", "#993333", "#FF00FF",
+            "#975e6d", "#e0719c", "#dd4c51", "#c94a44", "#dd4c51", "#BA55D3", "#9400D3", "#9932CC",
+            "#4B0082", "#8A2BE2", "#9370DB", "#7B68EE", "#70DBDB", "#7F00FF", "#70DB93", "#9F5F9F",
+            "#003300", "#FF00FF", "#f7a128", "#483D8B", "#E6E6FA", "#F8F8FF", "#527F76"};
 
     public ResponseData<List<CtmBrowseRst>> processBrowse(CtmBrowseRec data){
         ResponseData<List<CtmBrowseRst>> responseData = new ResponseData<>();
@@ -124,6 +133,8 @@ public class DesService {
             return responseData;
         }else{
 
+            List<String> cellTypeLists = degMapper.findcelltypeList(dataset);
+
             String tissue = description.getTissue();
 
             //第一部分
@@ -151,10 +162,47 @@ public class DesService {
             CtmSecondBrowse ctmSecondBrowse = new CtmSecondBrowse();
             String umapPath = basepath + "/" + dataset + "/UAMP.png";
             File umap = new File(umapPath);
-            if(umap.exists()){
-                String umapStr = CommonMethod.getImageStr(umapPath);
-                ctmSecondBrowse.setUmapStr(umapStr);
+            if(!cellTypeLists.isEmpty()){
+                if(umap.exists()){
+                    String umapStr = CommonMethod.getImageStr(umapPath);
+                    ctmSecondBrowse.setUmapStr(umapStr);
+
+                    List<String> dataList = new ArrayList<>();
+                    List<CtmUmapSeries> seriesList = new ArrayList<>();
+                    for(int i = 0; i < cellTypeLists.size(); i ++){
+                        String celltype = cellTypeLists.get(i);
+                        List<UmapData> umapDataList = umapDataMapper.findDataByCellType(celltype, dataset);
+                        if(!umapDataList.isEmpty()){
+                            CtmUmapSeries ctmUmapSeries = new CtmUmapSeries();
+                            List<UmapValueData> umapValueDataList = new ArrayList<>();
+                            for(UmapData umapData : umapDataList){
+                                UmapValueData umapValueData = new UmapValueData();
+                                List<String> valueList = new ArrayList<>();
+                                valueList.add(umapData.getUmapx());
+                                valueList.add(umapData.getUmapy());
+                                valueList.add(umapData.getCell());
+                                valueList.add(umapData.getCelltype());
+                                umapValueData.setValue(valueList);
+                                umapValueDataList.add(umapValueData);
+                            }
+                            ctmUmapSeries.setData(umapValueDataList);
+                            ctmUmapSeries.setName(celltype);
+                            seriesList.add(ctmUmapSeries);
+                            dataList.add(celltype);
+                        }
+                    }
+
+                    ctmSecondBrowse.setLegendData(dataList);
+                    ctmSecondBrowse.setSeries(seriesList);
+
+                }else{
+
+                }
+            }else{
+
             }
+
+
 
             //第三部分
             CtmThirdBrowse ctmThirdBrowse = new CtmThirdBrowse();
@@ -240,9 +288,9 @@ public class DesService {
 
             //第四部分
 
-            List<String> cellTypeList = degMapper.findcelltypeList(dataset);
+
             CtmFourthBrowse fourth = new CtmFourthBrowse();
-            if(cellTypeList.isEmpty()){
+            if(cellTypeLists.isEmpty()){
 
             }else{
 
@@ -251,7 +299,7 @@ public class DesService {
                 List<ListData> dropList = new ArrayList<>();
 
                 List<FourthData> fourthDataList = new ArrayList<>();
-                for(String cellTypeName : cellTypeList){
+                for(String cellTypeName : cellTypeLists){
                     FourthData fourthData = new FourthData();
                     ListData listData = new ListData();
                     fourthData.setName(cellTypeName);

@@ -44,17 +44,26 @@ public class DesController {
         return desService.processSunChart(reqData.getData());
     }
 
-
+    /**
+     * 首页的树形结构图
+     * @param requestData
+     * @return
+     */
     @RequestMapping(value = "/firstTree", method = RequestMethod.POST)
     public ResponseData<List<CtmFirstPageTree>> processFirstTree(@RequestBody RequestData<?> requestData){
         return desService.processFirstTree();
     }
 
-    //browse详情页
+    /**
+     * browse详情页，共5个部分结果
+     * @param reqData
+     * @return
+     */
     @RequestMapping(value = "/detail", method = RequestMethod.POST)
     public ResponseData<CtmBrowseDetailRst> processDetail(@RequestBody RequestData<CtmBrowseDetailRec> reqData){
         return desService.processDetail(reqData.getData());
     }
+
 
     @RequestMapping(value = "/browseWindow", method = RequestMethod.POST)
     public ResponseData<CtmBrowseWindowRst> processWindow(@RequestBody RequestData<CtmBrowsesWindowRec> requestData){

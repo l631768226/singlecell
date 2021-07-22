@@ -30,7 +30,7 @@ public interface DegMapper {
     })
     List<Deg> findSearch(@Param("tissue")String tissue, @Param("dataset")String dataset, @Param("celltype")String celltype);
 
-    @Select("select celltype from deg where dataset = #{dataset} group by celltype")
+    @Select("select celltype from deg where dataset = #{dataset} group by celltype order by celltype asc")
     List<String> findcelltypeList(@Param("dataset")String dataset);
 
     @Select("select * from deg where id = #{id}")
@@ -42,5 +42,8 @@ public interface DegMapper {
 
     @Select("select * from deg where tissue = #{tissue} and dataset = #{dataset} and celltype = #{celltype} limit 1")
     List<Deg> findByTDC(@Param("tissue")String tissue, @Param("dataset")String dataset, @Param("celltype")String cellType);
+
+    @Select("select gene from deg where tissue = #{tissue} and dataset = #{dataset} and celltype = #{celltype} order by gene asc")
+    List<String> findListByTDC(@Param("tissue")String tissue, @Param("dataset")String dataset, @Param("celltype")String cellType);
 
 }
