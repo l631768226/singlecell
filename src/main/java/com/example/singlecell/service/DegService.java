@@ -232,7 +232,6 @@ public class DegService {
 
 //            List<String> geneList = degMapper.findListByTDC(tissue, dataset, celltype);
 //            if(!geneList.isEmpty()) {
-
 //                    List<VolcanoData> volcanoDataList = volcanoMapper.findListInGene(geneList);
 
                     List<VolcanoData> volcanoDataList = volcanoMapper.findListByCellTypeAndDataset(celltype, dataset);
