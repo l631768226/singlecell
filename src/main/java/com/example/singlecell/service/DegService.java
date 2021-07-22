@@ -388,7 +388,6 @@ public class DegService {
     }
 
     public ResponseData<List<CtmLikeRst>> processGeneLike(CtmLike data) {
-
         ResponseData<List<CtmLikeRst>> responseData = new ResponseData<>();
 
         String gene = data.getGene();
