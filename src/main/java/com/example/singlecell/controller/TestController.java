@@ -1,6 +1,8 @@
 package com.example.singlecell.controller;
 
+import com.example.singlecell.mapper.CellnumMapper;
 import com.example.singlecell.mapper.GodownMapper;
+import com.example.singlecell.model.Cellnum;
 import com.example.singlecell.model.GoDown;
 import com.example.singlecell.utils.CommonMethod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -19,6 +23,9 @@ public class TestController {
 
     @Autowired
     private GodownMapper godownMapper;
+
+    @Autowired
+    private CellnumMapper cellnumMapper;
 
 
     @RequestMapping(value = "/init", method = {RequestMethod.POST})
@@ -75,5 +82,6 @@ public class TestController {
             return "noexist";
         }
     }
+
 
 }

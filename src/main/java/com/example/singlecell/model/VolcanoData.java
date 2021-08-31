@@ -18,6 +18,16 @@ public class VolcanoData {
 
     private String xinterceptright;
 
+    private String logpvalue;
+
+    public String getLogpvalue() {
+        return logpvalue;
+    }
+
+    public void setLogpvalue(String logpvalue) {
+        this.logpvalue = logpvalue;
+    }
+
     public int getId() {
         return id;
     }

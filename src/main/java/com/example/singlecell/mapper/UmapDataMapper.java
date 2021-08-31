@@ -19,6 +19,6 @@ public interface UmapDataMapper {
     })
     List<UmapData> findDataByCellTypeList(@Param("celltypeList")List<String> cellTypeList);
 
-    @Select("select * from umapdata where celltype = #{celltype} and dataset = #{dataset} order by cell asc")
+    @Select("select * from umapdata where celltype = #{celltype} and dataset = #{dataset} order by celltype asc")
     List<UmapData> findDataByCellType(@Param("celltype")String celltype, @Param("dataset")String dataset);
 }

@@ -28,6 +28,16 @@ public class CtmDownloadList {
 
     private String alldegs;
 
+    private String datasetCSV;
+
+    public String getDatasetCSV() {
+        return datasetCSV;
+    }
+
+    public void setDatasetCSV(String datasetCSV) {
+        this.datasetCSV = datasetCSV;
+    }
+
     public String getAlldegs(){
         return alldegs;
     }

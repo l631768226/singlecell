@@ -16,6 +16,16 @@ public class Deg {
 
     private String pvalue;
 
+    private String degId;
+
+    public String getDegId() {
+        return degId;
+    }
+
+    public void setDegId(String degId) {
+        this.degId = degId;
+    }
+
     public int getId() {
         return id;
     }

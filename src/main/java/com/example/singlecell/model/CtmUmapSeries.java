@@ -4,7 +4,7 @@ import java.util.List;
 
 public class CtmUmapSeries {
 
-    private List<UmapValueData> data;
+    private List<VolcanoValueData> data;
 
     private String type = "scatter";
 
@@ -14,11 +14,11 @@ public class CtmUmapSeries {
 
     private UmapTooltip encode = new UmapTooltip();
 
-    public List<UmapValueData> getData() {
+    public List<VolcanoValueData> getData() {
         return data;
     }
 
-    public void setData(List<UmapValueData> data) {
+    public void setData(List<VolcanoValueData> data) {
         this.data = data;
     }
 

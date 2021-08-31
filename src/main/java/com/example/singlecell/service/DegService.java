@@ -5,8 +5,6 @@ import com.example.singlecell.mapper.GodownMapper;
 import com.example.singlecell.mapper.VolcanoMapper;
 import com.example.singlecell.model.*;
 import com.example.singlecell.utils.CommonMethod;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,17 +51,23 @@ public class DegService {
         String gene = data.getGene();
 
         List<Deg> degList = degMapper.findListByGene(gene);
+        List<Deg> degList1 = degMapper.findListByDegId(gene);
+        degList.addAll(degList1);
         if(!degList.isEmpty()){
             for(Deg deg : degList){
                 CtmWindowDeg ctmWindowDeg = new CtmWindowDeg();
                 BeanUtils.copyProperties(deg, ctmWindowDeg);
+                String geneStr = deg.getGene();
+                ctmWindowDeg.setGene(geneStr);
                 String geneHtml = "<p style:\"font-size:18px;font-weight:500;\">" +"<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/gene/?term="
-                        + gene + "\">"+ gene + "</a></span>" + "</p>";
+                        + geneStr + "\">"+ geneStr + "</a></span>" + "</p>";
                 ctmWindowDeg.setGeneHtml(geneHtml);
 
                 ctmWindowDegList.add(ctmWindowDeg);
             }
         }
+
+
 
         responseData.setStatus(ReturnStatus.OK);
         responseData.setResultSet(ctmWindowDegList);
@@ -94,11 +96,11 @@ public class DegService {
 
         //火山图
         String cellType = deg.getCelltype();
-        String volcanoPath = basepath + "/" + dataset + "/火山图/" + cellType + "_Volcano.png";
-        File volcano = new File(volcanoPath);
-        if(volcano.exists()){
-            String volcanoStr = CommonMethod.getImageStr(volcanoPath);
-            ctmSearchDetailRst.setVolcaStr(volcanoStr);
+//        String volcanoPath = basepath + "/" + dataset + "/火山图/" + cellType + "_Volcano.png";
+//        File volcano = new File(volcanoPath);
+//        if(volcano.exists()){
+//            String volcanoStr = CommonMethod.getImageStr(volcanoPath);
+            ctmSearchDetailRst.setVolcaStr("");
 
 
 //            List<String> geneList = degMapper.findListByTDC(deg.getTissue(), dataset, cellType);
@@ -138,9 +140,10 @@ public class DegService {
                                 VolcanoValueData volcanoValueData = new VolcanoValueData(legendColor.get(currentStatus));
                                 List<String> valueList = new ArrayList<>();
                                 valueList.add(volcanoData.getLogfc());
-                                valueList.add(volcanoData.getPvalue());
+                                valueList.add(volcanoData.getLogpvalue());
                                 valueList.add(volcanoData.getGene());
                                 valueList.add(currentStatus);
+                                valueList.add(volcanoData.getPvalue());
                                 volcanoValueData.setValue(valueList);
 
                                 valueDataList.add(volcanoValueData);
@@ -165,7 +168,7 @@ public class DegService {
                 ctmSearchDetailRst.setLegendData(legendStatus);
                 ctmSearchDetailRst.setSeries(volcanoList);
                 ctmSearchDetailRst.setColor(colors);
-            }
+//            }
 //        }
 
 
@@ -219,12 +222,12 @@ public class DegService {
         if(!degList.isEmpty()){
             for(Deg deg : degList) {
                 String resultCellType = deg.getCelltype();
-                String volcanoPath = basepath + "/" + dataset + "/火山图/" + resultCellType + "_Volcano.png";
-                String imgStr = CommonMethod.getImageStr(volcanoPath);
-                if (imgStr == null) {
-                    continue;
-                }
-                ctmSearchSecondRst.setImgStr(imgStr);
+//                String volcanoPath = basepath + "/" + dataset + "/火山图/" + resultCellType + "_Volcano.png";
+//                String imgStr = CommonMethod.getImageStr(volcanoPath);
+//                if (imgStr == null) {
+//                    continue;
+//                }
+                ctmSearchSecondRst.setImgStr("1");
                 ctmSearchSecondRst.setName(resultCellType);
                 ctmSearchSecondRst.setCelltype(resultCellType);
                 ctmSearchSecondRst.setDataset(deg.getDataset());
@@ -235,7 +238,6 @@ public class DegService {
 //                    List<VolcanoData> volcanoDataList = volcanoMapper.findListInGene(geneList);
 
                     List<VolcanoData> volcanoDataList = volcanoMapper.findListByCellTypeAndDataset(celltype, dataset);
-                    System.out.println(volcanoDataList.size());
                     List<CtmVolcanoSeries> volcanoList = new ArrayList<>();
 
                     if (!volcanoDataList.isEmpty()) {
@@ -267,9 +269,10 @@ public class DegService {
                                     VolcanoValueData volcanoValueData = new VolcanoValueData(legendColor.get(currentStatus));
                                     List<String> valueList = new ArrayList<>();
                                     valueList.add(volcanoData.getLogfc());
-                                    valueList.add(volcanoData.getPvalue());
+                                    valueList.add(volcanoData.getLogpvalue());
                                     valueList.add(volcanoData.getGene());
                                     valueList.add(currentStatus);
+                                    valueList.add(volcanoData.getPvalue());
                                     volcanoValueData.setValue(valueList);
 
                                     valueDataList.add(volcanoValueData);
@@ -318,18 +321,21 @@ public class DegService {
             }
         }
 
-        String upPath =  basepath + "/" + dataset + "/GO/" + celltype + "_Go_up.png";
-        String upImgStr = CommonMethod.getImageStr(upPath);
-        if(upImgStr != null){
-            List<GoDown> goDownList = godownMapper.
+//        String upPath =  basepath + "/" + dataset + "/GO/" + celltype + "_Go_up.png";
+//        String upImgStr = CommonMethod.getImageStr(upPath);
+//        if(upImgStr != null){
+            List<GoDown> goUpList = godownMapper.
                     findListByCelltypeAndDataset(celltype, dataset, "up");
             List<List<Object>> upDataList = new ArrayList<>();
-            List<Object> tablenameList = Arrays.asList("score", "amount", "product");
-            upDataList.add(tablenameList);
-            if(!goDownList.isEmpty()){
-                Double maxPvalue = goDownList.get(0).getPvalue();
-                Double minPvalue = goDownList.get(goDownList.size() - 1).getPvalue();
-                for(GoDown goDown : goDownList){
+            List<Object> upTablenameList = Arrays.asList("score", "amount", "product");
+            upDataList.add(upTablenameList);
+            if(!goUpList.isEmpty()){
+                Double maxPvalue = goUpList.get(0).getPvalue();
+                Double minPvalue = goUpList.get(goUpList.size() - 1).getPvalue();
+                if(goUpList.size() == 1){
+                    minPvalue = 0.000000000000001;
+                }
+                for(GoDown goDown : goUpList){
                     Double pvalue = goDown.getPvalue();
                     Double logpvalue = goDown.getLogpvalue();
                     String description = goDown.getDescription();
@@ -344,13 +350,17 @@ public class DegService {
                 }
                 ctmOnionSearchRst.setUpMin(minPvalue);
                 ctmOnionSearchRst.setUpMax(maxPvalue);
+                ctmOnionSearchRst.setUpDataList(upDataList);
+                ctmOnionSearchRst.setUpImgStr("1");
+            }else{
+                ctmOnionSearchRst.setUpImgStr("");
             }
-            ctmOnionSearchRst.setUpDataList(upDataList);
-        }
 
-        String downPath =  basepath + "/" + dataset + "/GO/" + celltype + "_Go_down.png";
-        String downImgStr = CommonMethod.getImageStr(downPath);
-        if(downImgStr != null){
+//        }
+
+//        String downPath =  basepath + "/" + dataset + "/GO/" + celltype + "_Go_down.png";
+//        String downImgStr = CommonMethod.getImageStr(downPath);
+//        if(downImgStr != null){
             List<GoDown> goDownList = godownMapper.
                     findListByCelltypeAndDataset(celltype, dataset, "down");
             List<List<Object>> downDataList = new ArrayList<>();
@@ -359,6 +369,9 @@ public class DegService {
             if(!goDownList.isEmpty()){
                 Double maxPvalue = goDownList.get(0).getPvalue();
                 Double minPvalue = goDownList.get(goDownList.size() - 1).getPvalue();
+                if(goDownList.size() == 1){
+                    minPvalue = 0.000000000000001;
+                }
                 for(GoDown goDown : goDownList){
                     Double pvalue = goDown.getPvalue();
                     Double logpvalue = goDown.getLogpvalue();
@@ -374,13 +387,15 @@ public class DegService {
                 }
                 ctmOnionSearchRst.setDownMin(minPvalue);
                 ctmOnionSearchRst.setDownMax(maxPvalue);
+                ctmOnionSearchRst.setDownDataList(downDataList);
+                ctmOnionSearchRst.setDownImgStr("1");
+            }else{
+                ctmOnionSearchRst.setDownImgStr("");
             }
-            ctmOnionSearchRst.setDownDataList(downDataList);
-        }
 
         ctmOnionSearchRst.setDataList(windowDegs);
-        ctmOnionSearchRst.setDownImgStr(downImgStr);
-        ctmOnionSearchRst.setUpImgStr(upImgStr);
+
+
         responseData.setStatus(ReturnStatus.OK);
         responseData.setResultSet(ctmOnionSearchRst);
         return responseData;
@@ -400,6 +415,10 @@ public class DegService {
         }
 
         List<String> geneList = degMapper.findGeneLike(gene);
+        List<String> degidList = degMapper.findDegIdLikeId(gene);
+
+        geneList.addAll(degidList);
+
         List<CtmLikeRst> resultList = new ArrayList<>();
 
         if(!geneList.isEmpty()){

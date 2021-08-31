@@ -1,5 +1,6 @@
 package com.example.singlecell.service;
 
+import com.example.singlecell.mapper.CellnumMapper;
 import com.example.singlecell.mapper.DegMapper;
 import com.example.singlecell.mapper.DesMapper;
 import com.example.singlecell.mapper.UmapDataMapper;
@@ -34,6 +35,9 @@ public class DesService {
 
     @Autowired
     private UmapDataMapper umapDataMapper;
+
+    @Autowired
+    private CellnumMapper cellnumMapper;
 
     @Value("${custom.basepath}")
     private String basepath;
@@ -86,22 +90,22 @@ public class DesService {
             "#4B0082", "#8A2BE2", "#9370DB", "#7B68EE", "#70DBDB", "#7F00FF", "#70DB93", "#9F5F9F",
             "#003300", "#FF00FF", "#f7a128", "#483D8B", "#E6E6FA", "#F8F8FF", "#527F76"};
 
-    public ResponseData<List<CtmBrowseRst>> processBrowse(CtmBrowseRec data){
+    public ResponseData<List<CtmBrowseRst>> processBrowse(CtmBrowseRec data) {
         ResponseData<List<CtmBrowseRst>> responseData = new ResponseData<>();
         List<CtmBrowseRst> dataList = new ArrayList<>();
 
         List<Description> firstDes = desMapper.findGroupByTissue();
-        if(firstDes.isEmpty()){
+        if (firstDes.isEmpty()) {
 
-        }else{
-            for(Description first : firstDes){
+        } else {
+            for (Description first : firstDes) {
                 CtmBrowseRst ctmBrowseRst = new CtmBrowseRst();
                 ctmBrowseRst.setId(first.getDatabaseid());
                 String tissue = first.getTissue();
                 ctmBrowseRst.setLabel(tissue);
                 List<Description> secondList = desMapper.findByTissueGroupByDataset(tissue);
                 List<CtmChild> childList = new ArrayList<>();
-                for(Description second : secondList){
+                for (Description second : secondList) {
                     CtmChild ctmChild = new CtmChild();
                     ctmChild.setIndexId(second.getId());
                     ctmChild.setLabel(second.getDatasetname());
@@ -127,11 +131,11 @@ public class DesService {
 
         Description description = desMapper.findByDataset(dataset);
 
-        if(description == null){
+        if (description == null) {
             responseData.setStatus(ReturnStatus.ERR0001);
             responseData.setExtInfo("传入数据有误");
             return responseData;
-        }else{
+        } else {
 
             List<String> cellTypeLists = degMapper.findcelltypeList(dataset);
 
@@ -144,171 +148,171 @@ public class DesService {
 //            "<p>" + metabolite + " (" +"<a target=\"_blank\" href=\"https://pubchem.ncbi.nlm.nih.gov/compound/"
 //                    + metabolitePubChemCID + "\">"+ metabolitePubChemCID + "</a></span>" + ")" + "</p>";
             String accessionHtml = "<p>" + "<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
-                    + accession + "\"  style:\"font-size:18px;font-weight:500;\">"+ accession + "</a></span>" + "</p>";
+                    + accession + "\"  style:\"font-size:18px;font-weight:500;\">" + accession + "</a></span>" + "</p>";
             firstBrowse.setAccessionHtml(accessionHtml);
 
             String publication = firstBrowse.getPublication();
             String publicationHtml = "";
-            if(publication == null || "".equals(publication)){
+            if (publication == null || "".equals(publication)) {
                 publicationHtml = "";
-            }else{
-                publicationHtml = "<p>"  +"<a  style:\"font-size:18px;font-weight:500;\" target=\"_blank\" href=\"" + description.getPubweb()    //https://pubmed.ncbi.nlm.nih.gov/"
-                        + publication + "\">"+ publication + "</a></span>" + "</p>";
+            } else {
+                publicationHtml = "<p>" + "<a  style:\"font-size:18px;font-weight:500;\" target=\"_blank\" href=\"" + description.getPubweb()    //https://pubmed.ncbi.nlm.nih.gov/"
+                        + publication + "\">" + publication + "</a></span>" + "</p>";
             }
 
             firstBrowse.setPublicationHtml(publicationHtml);
 
             //第二部分
             CtmSecondBrowse ctmSecondBrowse = new CtmSecondBrowse();
-            String umapPath = basepath + "/" + dataset + "/UAMP.png";
-            File umap = new File(umapPath);
-            if(!cellTypeLists.isEmpty()){
-                if(umap.exists()){
-                    String umapStr = CommonMethod.getImageStr(umapPath);
-                    ctmSecondBrowse.setUmapStr(umapStr);
+//            String umapPath = basepath + "/" + dataset + "/UAMP.png";
+//            File umap = new File(umapPath);
+            if (!cellTypeLists.isEmpty()) {
+//                if (umap.exists()) {
+//                    String umapStr = CommonMethod.getImageStr(umapPath);
+                ctmSecondBrowse.setUmapStr("1");
 
-                    List<String> dataList = new ArrayList<>();
-                    List<CtmUmapSeries> seriesList = new ArrayList<>();
-                    for(int i = 0; i < cellTypeLists.size(); i ++){
-                        String celltype = cellTypeLists.get(i);
-                        List<UmapData> umapDataList = umapDataMapper.findDataByCellType(celltype, dataset);
-                        if(!umapDataList.isEmpty()){
-                            CtmUmapSeries ctmUmapSeries = new CtmUmapSeries();
-                            List<UmapValueData> umapValueDataList = new ArrayList<>();
-                            for(UmapData umapData : umapDataList){
-                                UmapValueData umapValueData = new UmapValueData();
-                                List<String> valueList = new ArrayList<>();
-                                valueList.add(umapData.getUmapx());
-                                valueList.add(umapData.getUmapy());
-                                valueList.add(umapData.getCell());
-                                valueList.add(umapData.getCelltype());
-                                umapValueData.setValue(valueList);
-                                umapValueDataList.add(umapValueData);
-                            }
-                            ctmUmapSeries.setData(umapValueDataList);
-                            ctmUmapSeries.setName(celltype);
-                            seriesList.add(ctmUmapSeries);
-                            dataList.add(celltype);
+                List<String> dataList = new ArrayList<>();
+                List<CtmUmapSeries> seriesList = new ArrayList<>();
+                List<String> umapColors = new ArrayList<>();
+                for (int i = 0; i < cellTypeLists.size(); i++) {
+                    String celltype = cellTypeLists.get(i);
+                    List<UmapData> umapDataList = umapDataMapper.findDataByCellType(celltype, dataset);
+                    if (!umapDataList.isEmpty()) {
+                        CtmUmapSeries ctmUmapSeries = new CtmUmapSeries();
+                        List<VolcanoValueData> umapValueDataList = new ArrayList<>();
+                        String color = umapColor[i];
+                        for (UmapData umapData : umapDataList) {
+                            VolcanoValueData umapValueData = new VolcanoValueData(color);
+                            List<String> valueList = new ArrayList<>();
+                            valueList.add(umapData.getUmapx());
+                            valueList.add(umapData.getUmapy());
+                            valueList.add(umapData.getCell());
+                            valueList.add(umapData.getCelltype());
+                            umapValueData.setValue(valueList);
+                            umapValueDataList.add(umapValueData);
                         }
+                        umapColors.add(color);
+                        ctmUmapSeries.setData(umapValueDataList);
+                        ctmUmapSeries.setName(celltype);
+                        seriesList.add(ctmUmapSeries);
+                        dataList.add(celltype);
                     }
-
-                    ctmSecondBrowse.setLegendData(dataList);
-                    ctmSecondBrowse.setSeries(seriesList);
-
-                }else{
-
                 }
-            }else{
+
+                ctmSecondBrowse.setLegendData(dataList);
+                ctmSecondBrowse.setSeries(seriesList);
+                ctmSecondBrowse.setColor(umapColors);
+            } else {
 
             }
-
+//            } else {
+//
+//            }
 
 
             //第三部分
             CtmThirdBrowse ctmThirdBrowse = new CtmThirdBrowse();
-            String csvPath = basepath + "/" + dataset + "/cell_num.csv";
-            File csvFile = new File(csvPath);
-            if(csvFile.exists()){
-                try {
-                    InputStreamReader read = new InputStreamReader(
-                            new FileInputStream(csvFile), StandardCharsets.UTF_8);//考虑到编码格式
-                    BufferedReader bufferedReader = new BufferedReader(read);
-                    String lineTxt = null;
 
-                    LinkedList<String> cellTypeList = new LinkedList<String>();
-                    LinkedList<String> sampleList = new LinkedList<>();
+            List<Cellnum> cellnumList = cellnumMapper.findListByDataset(dataset);
 
-                    LinkedList<Double> numberList = new LinkedList<>();
-                    LinkedList<Double> sumList = new LinkedList<>();
-                    Double sum = new Double(0);
-                    Boolean tag = true;
+//            String csvPath = basepath + "/" + dataset + "/cell_num.csv";
+//            File csvFile = new File(csvPath);
+//            if (csvFile.exists()) {
+//            if(!cellnumList.isEmpty()){
+//                try {
+//                    InputStreamReader read = new InputStreamReader(
+//                            new FileInputStream(csvFile), StandardCharsets.UTF_8);//考虑到编码格式
+//                    BufferedReader bufferedReader = new BufferedReader(read);
+//                    String lineTxt = null;
 
-                    while ((lineTxt = bufferedReader.readLine()) != null) {
-                        String dataS[] = lineTxt.replace("\"", "").split(",");
-                        if("Celltype".equals(dataS[0]) || "CellType".equals(dataS[0])){
-                            continue;
-                        }
-                        String cellType = dataS[0];
-                        String sample = dataS[1];
-                        Double num = Double.valueOf(dataS[2]);
+            LinkedList<String> cellTypeList = new LinkedList<String>();
+            LinkedList<String> sampleList = new LinkedList<>();
 
-                        if(cellTypeList.contains(cellType)){
-                            //包含重复的，cellType的一圈已经走完了
-                        }else{
-                            cellTypeList.add(cellType);
-                        }
+            LinkedList<Double> numberList = new LinkedList<>();
+            LinkedList<Double> sumList = new LinkedList<>();
+            Double sum = new Double(0);
+            Boolean tag = true;
 
-                        if(!sampleList.contains(sample)){
-                            if(tag){
-                                tag = false;
-                            }else{
-                                sumList.add(sum);
-                            }
-                            sum = new Double(0);
-                            sampleList.add(sample);
-                        }
-                        sum += num;
-                        numberList.add(num);
-                    }
-                    sumList.add(sum);
-                    //一圈下来，将所有数据保存起来
+//                    while ((lineTxt = bufferedReader.readLine()) != null) {
+//                        String dataS[] = lineTxt.replace("\"", "").split(",");
+//                        if ("Celltype".equals(dataS[0]) || "CellType".equals(dataS[0])) {
+//                            continue;
+//                        }
+            for (Cellnum cellnum : cellnumList) {
+                String cellType = cellnum.getCelltype();
+                String sample = cellnum.getSample();
+                Double num = Double.valueOf(cellnum.getNumber());
 
-                    //共有多少列(num数据的间隔，也是echats中数据的个数)
-                    int sampleSize = sampleList.size();
-                    //每一列共有多少个值（共有多少种细胞类型）
-                    int cellTypeSize = cellTypeList.size();
-
-                    List<ThiredData> thiredDataList = new ArrayList<>();
-
-                    for(int i = 0; i < cellTypeSize; i ++){
-                        String cellTypeName = cellTypeList.get(i);
-                        LinkedList<Integer> dataList = new LinkedList<>();
-                        for(int j = 0; j < sampleSize; j ++){
-                            int index = j*cellTypeSize + i;
-
-                            Double shang = division(numberList.get(index), sumList.get(j), 2) * 100;
-                            Integer result = shang.intValue();
-//                        System.out.println(i + " " + j + " " + index + " : " + numberList.get(index) +"/" +  sumList.get(j) + " = " + result);
-                            dataList.add(result);
-                        }
-                        ThiredData thiredData = new ThiredData();
-                        thiredData.setData(dataList);
-                        thiredData.setName(cellTypeName);
-                        thiredDataList.add(thiredData);
-                    }
-
-                    ctmThirdBrowse.setDataList(thiredDataList);
-                    ctmThirdBrowse.setSampleList(sampleList);
-
-//                    System.out.println(new Gson().toJson(ctmThirdBrowse));
-                }catch (Exception e){
-                    e.printStackTrace();
+                if (cellTypeList.contains(cellType)) {
+                    //包含重复的，cellType的一圈已经走完了
+                } else {
+                    cellTypeList.add(cellType);
                 }
+
+                if (!sampleList.contains(sample)) {
+                    if (tag) {
+                        tag = false;
+                    } else {
+                        sumList.add(sum);
+                    }
+                    sum = new Double(0);
+                    sampleList.add(sample);
+                }
+                sum += num;
+                numberList.add(num);
             }
+            sumList.add(sum);
+            //一圈下来，将所有数据保存起来
+
+            //共有多少列(num数据的间隔，也是echats中数据的个数)
+            int sampleSize = sampleList.size();
+            //每一列共有多少个值（共有多少种细胞类型）
+            int cellTypeSize = cellTypeList.size();
+
+            List<ThiredData> thiredDataList = new ArrayList<>();
+            List<String> thirdColor = new ArrayList<>();
+            for (int i = 0; i < cellTypeSize; i++) {
+                String cellTypeName = cellTypeList.get(i);
+                LinkedList<Integer> dataList = new LinkedList<>();
+                for (int j = 0; j < sampleSize; j++) {
+                    int index = j * cellTypeSize + i;
+                    Double shang = division(numberList.get(index), sumList.get(j), 2) * 100;
+                    Integer result = shang.intValue();
+                    dataList.add(result);
+                }
+                thirdColor.add(umapColor[i]);
+                ThiredData thiredData = new ThiredData();
+                thiredData.setData(dataList);
+                thiredData.setName(cellTypeName);
+                thiredDataList.add(thiredData);
+            }
+            ctmThirdBrowse.setColor(thirdColor);
+            ctmThirdBrowse.setDataList(thiredDataList);
+            ctmThirdBrowse.setSampleList(sampleList);
+
 
             //第四部分
 
-
             CtmFourthBrowse fourth = new CtmFourthBrowse();
-            if(cellTypeLists.isEmpty()){
+            if (cellTypeLists.isEmpty()) {
 
-            }else{
+            } else {
 
                 fourth.setDataset(dataset);
                 fourth.setTissue(tissue);
                 List<ListData> dropList = new ArrayList<>();
 
                 List<FourthData> fourthDataList = new ArrayList<>();
-                for(String cellTypeName : cellTypeLists){
+                for (String cellTypeName : cellTypeLists) {
                     FourthData fourthData = new FourthData();
                     ListData listData = new ListData();
                     fourthData.setName(cellTypeName);
-                    String volcanoPath = basepath + "/" + dataset + "/火山图/" + cellTypeName + "_Volcano.png";
-                    String imgStr = CommonMethod.getImageStr(volcanoPath);
-                    if(imgStr == null){
-                        continue;
-                    }
-                    fourthData.setImgStr(imgStr);
+//                    String volcanoPath = basepath + "/" + dataset + "/火山图/" + cellTypeName + "_Volcano.png";
+//                    String imgStr = CommonMethod.getImageStr(volcanoPath);
+//                    if (imgStr == null) {
+//                        continue;
+//                    }
+                    fourthData.setImgStr("");
 
                     listData.setKey(cellTypeName);
                     listData.setValue(cellTypeName);
@@ -324,7 +328,7 @@ public class DesService {
             CtmFifthBrowse ctmFifthBrowse = new CtmFifthBrowse();
             String heatmapPath = basepath + "/" + dataset + "/Heatmap.png";
             File heatmap = new File(heatmapPath);
-            if(heatmap.exists()){
+            if (heatmap.exists()) {
                 String heatmapStr = CommonMethod.getImageStr(heatmapPath);
                 ctmFifthBrowse.setHeatmapStr(heatmapStr);
             }
@@ -345,12 +349,12 @@ public class DesService {
         ResponseData<List<CtmSearchRule>> responseData = new ResponseData<>();
         List<String> tissueList = desMapper.findTissue();
         List<CtmSearchRule> resultList = new ArrayList<>();
-        if(tissueList.isEmpty()){
+        if (tissueList.isEmpty()) {
             responseData.setStatus(ReturnStatus.OK);
             responseData.setResultSet(resultList);
             return responseData;
-        }else{
-            for(String str : tissueList){
+        } else {
+            for (String str : tissueList) {
                 CtmSearchRule ctmSearchRule = new CtmSearchRule();
                 ctmSearchRule.setLabel(str);
                 ctmSearchRule.setValue(str);
@@ -367,12 +371,12 @@ public class DesService {
         String tissue = data.getTissue();
         List<String> datasetList = desMapper.findDatasetName(tissue);
         List<CtmSearchRule> resultList = new ArrayList<>();
-        if(datasetList.isEmpty()){
+        if (datasetList.isEmpty()) {
             responseData.setStatus(ReturnStatus.OK);
             responseData.setResultSet(resultList);
             return responseData;
-        }else{
-            for(String str : datasetList){
+        } else {
+            for (String str : datasetList) {
                 CtmSearchRule ctmSearchRule = new CtmSearchRule();
                 ctmSearchRule.setLabel(str);
                 ctmSearchRule.setValue(str);
@@ -390,12 +394,12 @@ public class DesService {
         String dataset = data.getDataset();
         List<String> cellTypeList = degMapper.findcelltypeList(dataset);
         List<CtmSearchRule> resultList = new ArrayList<>();
-        if(cellTypeList.isEmpty()){
+        if (cellTypeList.isEmpty()) {
             responseData.setStatus(ReturnStatus.OK);
             responseData.setResultSet(resultList);
             return responseData;
-        }else{
-            for(String str : cellTypeList){
+        } else {
+            for (String str : cellTypeList) {
                 CtmSearchRule ctmSearchRule = new CtmSearchRule();
                 ctmSearchRule.setLabel(str);
                 ctmSearchRule.setValue(str);
@@ -443,25 +447,25 @@ public class DesService {
 
         List<CtmWindowDeg> windowDegs = new ArrayList<>();
 
-        if(degList.isEmpty()){
+        if (degList.isEmpty()) {
 
-        }else{
-            for(Deg deg : degList){
+        } else {
+            for (Deg deg : degList) {
                 CtmWindowDeg ctmWindowDeg = new CtmWindowDeg();
                 BeanUtils.copyProperties(deg, ctmWindowDeg);
                 String gene = deg.getGene();
-                String geneHtml = "<p style:\"font-size:18px;font-weight:500;\">" +"<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/gene/?term="
-                        + gene + "\">"+ gene + "</a></span>" + "</p>";
+                String geneHtml = "<p style:\"font-size:18px;font-weight:500;\">" + "<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/gene/?term="
+                        + gene + "\">" + gene + "</a></span>" + "</p>";
                 ctmWindowDeg.setGeneHtml(geneHtml);
 
                 windowDegs.add(ctmWindowDeg);
             }
         }
 
-        String upPath =  basepath + "/" + dataset + "/GO/" + celltype + "_Go_up.png";
+        String upPath = basepath + "/" + dataset + "/GO/" + celltype + "_Go_up.png";
         String upImgStr = CommonMethod.getImageStr(upPath);
 
-        String downPath =  basepath + "/" + dataset + "/GO/" + celltype + "_Go_down.png";
+        String downPath = basepath + "/" + dataset + "/GO/" + celltype + "_Go_down.png";
         String downImgStr = CommonMethod.getImageStr(downPath);
 
         ctmData.setDataList(windowDegs);
@@ -482,14 +486,10 @@ public class DesService {
         String celltype = data.getCelltype();
         String gene = data.getGene();
 
-//        System.out.println(dataset + " " + celltype + " " + gene);
-
         String violinPath = basepath + "/" + dataset + "/小提琴图/" + celltype + "_" + gene + "_Violin.png";
 
-//        System.out.println(violinPath);
-
         File violin = new File(violinPath);
-        if(violin.exists()){
+        if (violin.exists()) {
             String volcanoStr = CommonMethod.getImageStr(violinPath);
             ctmViolinRst.setImgStr(volcanoStr);
             ctmViolinRst.setName(gene);
@@ -497,9 +497,35 @@ public class DesService {
 
         String umapPath = basepath + "/" + dataset + "/UMAP/" + celltype + "_" + gene + "_UMAP.png";
         File umap = new File(umapPath);
-        if(umap.exists()){
+        if (umap.exists()) {
             String umapStr = CommonMethod.getImageStr(umapPath);
             ctmViolinRst.setUmapStr(umapStr);
+
+            List<String> dataList = new ArrayList<>();
+            List<CtmUmapSeries> seriesList = new ArrayList<>();
+            List<UmapData> umapDataList = umapDataMapper.findDataByCellType(celltype, dataset);
+            if (!umapDataList.isEmpty()) {
+                CtmUmapSeries ctmUmapSeries = new CtmUmapSeries();
+                List<VolcanoValueData> umapValueDataList = new ArrayList<>();
+                for (UmapData umapData : umapDataList) {
+                    VolcanoValueData umapValueData = new VolcanoValueData(umapColor[0]);
+                    List<String> valueList = new ArrayList<>();
+                    valueList.add(umapData.getUmapx());
+                    valueList.add(umapData.getUmapy());
+                    valueList.add(umapData.getCell());
+                    valueList.add(umapData.getCelltype());
+                    umapValueData.setValue(valueList);
+                    umapValueDataList.add(umapValueData);
+                }
+                List<String> colors = Arrays.asList(umapColor[0]);
+                ctmUmapSeries.setData(umapValueDataList);
+                ctmUmapSeries.setName(celltype);
+                seriesList.add(ctmUmapSeries);
+                dataList.add(celltype);
+                ctmViolinRst.setColor(colors);
+                ctmViolinRst.setLegendData(dataList);
+                ctmViolinRst.setSeries(seriesList);
+            }
         }
 
         responseData.setStatus(ReturnStatus.OK);
@@ -522,9 +548,9 @@ public class DesService {
         titleRow.createCell(5).setCellValue("P value");
         int cell = 1;
 
-        if(!degList.isEmpty()){
+        if (!degList.isEmpty()) {
 
-            for(Deg deg : degList) {
+            for (Deg deg : degList) {
                 Row row = sheet.createRow(cell);// 从第二行开始保存数据
                 //humanMouse
                 row.createCell(0).setCellValue(deg.getDataset());
@@ -551,10 +577,10 @@ public class DesService {
         List<CtmDownloadList> ctmDownloadLists = new ArrayList<>();
 
         List<Description> desList = desMapper.findList();
-        if(desList.isEmpty()){
+        if (desList.isEmpty()) {
 
-        }else{
-            for(Description description : desList){
+        } else {
+            for (Description description : desList) {
                 CtmDownloadList ctmDownloadList = new CtmDownloadList();
                 BeanUtils.copyProperties(description, ctmDownloadList);
 
@@ -562,17 +588,21 @@ public class DesService {
 
                 String accession = description.getAccession();
                 String accessionHtml = "<p>" + "<a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
-                        + accession + "\">"+ accession + "</a></span>" + "</p>";
+                        + accession + "\">" + accession + "</a></span>" + "</p>";
                 ctmDownloadList.setAccessionHtml(accessionHtml);
 
                 String profileHtml = "<p>" + "<a target=\"_blank\" href=\"" + downloadProfileUrl +
-                         dataset + "\">DEGs' expression profile</a></span>" + "</p>";
+                        dataset + "\">DEGs' expression profile</a></span>" + "</p>";
 
                 String alldegsHtml = "<p>" + "<a target=\"_blank\" href=\"" + downloadDegsUrl +
                         dataset + "\">difference of all genes</a></span>" + "</p>";
 
+                String datasetCSV = "<p>" + "<a target=\"_blank\" href=\"http://bio-annotation.cn/scovid/DEGs/"+
+                        dataset + "_DEGs.csv\">difference of DEGs</a></span>" + "</p>";
+
                 ctmDownloadList.setProfile(profileHtml);
                 ctmDownloadList.setAlldegs(alldegsHtml);
+                ctmDownloadList.setDatasetCSV(datasetCSV);
                 ctmDownloadLists.add(ctmDownloadList);
             }
         }
@@ -589,8 +619,8 @@ public class DesService {
         List<CtmFirstPageTree> treeList = new ArrayList<>();
 
         List<Description> descriptions = desMapper.findListOrderByDID();
-        if(!descriptions.isEmpty()){
-            for(Description description : descriptions){
+        if (!descriptions.isEmpty()) {
+            for (Description description : descriptions) {
                 CtmFirstPageTree ctmFirstPageTree = new CtmFirstPageTree();
                 ctmFirstPageTree.setId(description.getDatabaseid());
                 ctmFirstPageTree.setLabel(description.getTissue());
@@ -609,8 +639,8 @@ public class DesService {
         String fileName = id + ".csv";
 
         File file = new File(filePath);
-        if(file.exists()){
-            response.setHeader("Content-Disposition", "attachment;filename=" + fileName+";"+"filename*=utf-8''"+fileName);
+        if (file.exists()) {
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ";" + "filename*=utf-8''" + fileName);
             response.setContentType("multipart/form-data");
             ServletOutputStream out = null;
             FileInputStream in = null;
@@ -624,9 +654,9 @@ public class DesService {
                     out.write(buffer, 0, len);
                 }
                 out.flush();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
-            }finally {
+            } finally {
                 try {
                     out.close();
                     in.close();
@@ -634,7 +664,7 @@ public class DesService {
                     e.printStackTrace();
                 }
             }
-        }else{
+        } else {
 
         }
 
@@ -647,17 +677,17 @@ public class DesService {
         List<TissueSunChart> tissueSunChartList = new ArrayList<>();
 
         List<Description> firstDes = desMapper.findGroupByTissue();
-        if(firstDes.isEmpty()){
+        if (firstDes.isEmpty()) {
 
-        }else{
+        } else {
             int firstCount = 0;
             int secondCount = 0;
-            for(Description first : firstDes){
+            for (Description first : firstDes) {
                 TissueSunChart tissueSunChart = new TissueSunChart();
 
                 ItemStyle firstItem = new ItemStyle();
                 firstItem.setColor(firstColor[firstCount]);
-                firstCount ++;
+                firstCount++;
                 String tissue = first.getTissue();
                 tissueSunChart.setName(tissue);
                 tissueSunChart.setItemStyle(firstItem);
@@ -665,7 +695,7 @@ public class DesService {
                 List<Description> secondList = desMapper.findByTissueGroupByDataset(tissue);
                 List<ChildSunChart> childList = new ArrayList<>();
 
-                for(Description second : secondList){
+                for (Description second : secondList) {
                     ChildSunChart ctmChild = new ChildSunChart();
                     ctmChild.setName(second.getDatasetname());
                     ctmChild.setValue(Integer.valueOf(second.getCellsnum()));
@@ -673,7 +703,7 @@ public class DesService {
                     secondStyle.setColor(secondColor[secondCount]);
                     ctmChild.setItemStyle(secondStyle);
                     childList.add(ctmChild);
-                    secondCount ++;
+                    secondCount++;
                 }
                 tissueSunChart.setChildren(childList);
 
@@ -692,8 +722,8 @@ public class DesService {
         String fileName = id + "_all_DEGs.csv";
 
         File file = new File(filePath);
-        if(file.exists()){
-            response.setHeader("Content-Disposition", "attachment;filename=" + fileName+";"+"filename*=utf-8''"+fileName);
+        if (file.exists()) {
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ";" + "filename*=utf-8''" + fileName);
             response.setContentType("multipart/form-data");
             ServletOutputStream out = null;
             FileInputStream in = null;
@@ -707,9 +737,9 @@ public class DesService {
                     out.write(buffer, 0, len);
                 }
                 out.flush();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
-            }finally {
+            } finally {
                 try {
                     out.close();
                     in.close();
@@ -717,7 +747,7 @@ public class DesService {
                     e.printStackTrace();
                 }
             }
-        }else{
+        } else {
 
         }
 
@@ -738,9 +768,9 @@ public class DesService {
         titleRow.createCell(5).setCellValue("P value");
         int cell = 1;
 
-        if(!degList.isEmpty()){
+        if (!degList.isEmpty()) {
 
-            for(Deg deg : degList) {
+            for (Deg deg : degList) {
                 Row row = sheet.createRow(cell);// 从第二行开始保存数据
                 //humanMouse
                 row.createCell(0).setCellValue(deg.getDataset());

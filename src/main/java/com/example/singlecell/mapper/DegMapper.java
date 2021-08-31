@@ -11,6 +11,9 @@ public interface DegMapper {
     @Select("select * from deg where gene = #{gene} order by gene asc")
     List<Deg> findListByGene(@Param("gene")String gene);
 
+    @Select("select * from deg where degid = #{degid} order by gene asc")
+    List<Deg> findListByDegId(@Param("degid")String degid);
+
     @Select("select * from deg where dataset = #{dataset} and celltype = #{celltype} order by gene asc")
     List<Deg> findByDatasetAndCellType(@Param("dataset")String dataset, @Param("celltype")String cellType);
 
@@ -39,6 +42,8 @@ public interface DegMapper {
     @Select("select gene from deg where gene like #{gene} group by gene order by gene asc")
     List<String> findGeneLike(@Param("gene")String gene);
 
+    @Select("select degid from deg where degid like #{id} group by gene order by gene asc")
+    List<String> findDegIdLikeId(@Param("id")String id);
 
     @Select("select * from deg where tissue = #{tissue} and dataset = #{dataset} and celltype = #{celltype} limit 1")
     List<Deg> findByTDC(@Param("tissue")String tissue, @Param("dataset")String dataset, @Param("celltype")String cellType);

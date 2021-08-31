@@ -9,6 +9,16 @@ public class CtmThirdBrowse {
 
     private List<ThiredData> dataList;
 
+    private List<String> color;
+
+    public List<String> getColor() {
+        return color;
+    }
+
+    public void setColor(List<String> color) {
+        this.color = color;
+    }
+
     public LinkedList<String> getSampleList() {
         return sampleList;
     }
