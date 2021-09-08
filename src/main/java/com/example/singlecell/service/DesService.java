@@ -174,8 +174,9 @@ public class DesService {
                 List<String> dataList = new ArrayList<>();
                 List<CtmUmapSeries> seriesList = new ArrayList<>();
                 List<String> umapColors = new ArrayList<>();
-                for (int i = 0; i < cellTypeLists.size(); i++) {
-                    String celltype = cellTypeLists.get(i);
+                List<String> typeList = umapDataMapper.findCelltypeListByDataset(dataset);
+                for (int i = 0; i < typeList.size(); i++) {
+                    String celltype = typeList.get(i);
                     List<UmapData> umapDataList = umapDataMapper.findDataByCellType(celltype, dataset);
                     if (!umapDataList.isEmpty()) {
                         CtmUmapSeries ctmUmapSeries = new CtmUmapSeries();
